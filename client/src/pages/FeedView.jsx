@@ -27,6 +27,10 @@ import {
   CornerDownRight
 } from 'lucide-react';
 import heroVetImg from '../assets/hero_vet_dog.jpg';
+import likePuppy from '../assets/reactions/like_puppy.png';
+import sadPuppy from '../assets/reactions/sad_puppy.png';
+import { ReactionPicker } from '../components/ReactionPicker';
+import { REACTION_MAP } from '../data/reactions';
 import { SPECIALTIES, STATES_INDIA } from '../data/mockData';
 import { api } from '../services/api';
 import { Avatar } from '../components/Avatar';
@@ -78,18 +82,50 @@ export function FeedView({
   // Social interaction states
   const lastTapMap = useRef({});
   const [doubleTapHearts, setDoubleTapHearts] = useState({});
+  const [postReactions, setPostReactions] = useState({});
   const [animatingLikes, setAnimatingLikes] = useState({});
   const [sharingPost, setSharingPost] = useState(null);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [sentShareDoctors, setSentShareDoctors] = useState({});
   const [feedToast, setFeedToast] = useState('');
 
+  const handleSelectPostReaction = (postId, reactionId) => {
+    const post = posts.find(p => p.id === postId);
+    const prevReaction = postReactions[postId] !== undefined ? postReactions[postId] : (post?.isLiked ? 'like_puppy' : null);
+
+    setPostReactions(prev => ({
+      ...prev,
+      [postId]: reactionId
+    }));
+
+    const wasLike = prevReaction && prevReaction.startsWith('like_');
+    const isNowLike = reactionId && reactionId.startsWith('like_');
+    if (wasLike !== isNowLike && onLikePost) {
+      onLikePost(postId);
+    }
+  };
+
+  const getPostLikes = (post) => {
+    const r = postReactions[post.id];
+    if (r === undefined) return post.likes || 0;
+    const base = post.likes || 0;
+    const isLike = r && r.startsWith('like_');
+    if (post.isLiked) {
+      return isLike ? base : Math.max(0, base - 1);
+    } else {
+      return isLike ? base + 1 : base;
+    }
+  };
+
+  const getPostDislikes = (post) => {
+    const r = postReactions[post.id];
+    const isDislike = r && r.startsWith('sad_');
+    const base = post.dislikes || 0;
+    return isDislike ? base + 1 : base;
+  };
+
   const triggerLikeWithAnim = (postId) => {
-    setAnimatingLikes(prev => ({ ...prev, [postId]: true }));
-    setTimeout(() => {
-      setAnimatingLikes(prev => ({ ...prev, [postId]: false }));
-    }, 450);
-    if (onLikePost) onLikePost(postId);
+    handleSelectPostReaction(postId, 'like_puppy');
   };
 
   const handleMediaDoubleTap = (e, post) => {
@@ -424,7 +460,7 @@ export function FeedView({
           <div className="composer-action-pills">
             <button className="btn-composer-pill" onClick={() => onOpenCreatePost('GENERAL_POST')}>
               <ImageIcon size={15} color="#059669" />
-              <span>Photo / Post</span>
+              <span>Photo / Zenv</span>
             </button>
 
             <button className="btn-composer-pill" onClick={() => onOpenCreatePost('CLINICAL_CASE')}>
@@ -449,7 +485,7 @@ export function FeedView({
           </div>
 
           <button className="btn-post-submit-dark" onClick={() => onOpenCreatePost('CLINICAL_CASE')}>
-            <span>Post</span>
+            <span>Zenv</span>
             <ArrowRight size={14} />
           </button>
         </div>
@@ -718,7 +754,7 @@ export function FeedView({
               onClick={() => onOpenCreatePost('GENERAL_POST')}
               style={{ margin: '0 auto' }}
             >
-              <span>Create First Post</span>
+              <span>Create First Zenv</span>
               <ArrowRight size={15} />
             </button>
           </div>
@@ -909,9 +945,13 @@ export function FeedView({
                             pointerEvents: 'none',
                             zIndex: 30,
                             animation: 'feedHeartBurst 0.85s ease-out forwards',
-                            filter: 'drop-shadow(0 6px 22px rgba(239, 68, 68, 0.8))'
+                            filter: 'drop-shadow(0 8px 24px rgba(245, 158, 11, 0.65))'
                           }}>
-                            <Heart size={84} fill="#EF4444" color="#FFFFFF" strokeWidth={1.5} />
+                            <img
+                              src={REACTION_MAP[postReactions[post.id]]?.icon || likePuppy}
+                              alt="Liked"
+                              style={{ width: 92, height: 92, objectFit: 'contain' }}
+                            />
                           </div>
                         )}
                       </div>
@@ -959,9 +999,13 @@ export function FeedView({
                             pointerEvents: 'none',
                             zIndex: 30,
                             animation: 'feedHeartBurst 0.85s ease-out forwards',
-                            filter: 'drop-shadow(0 6px 22px rgba(239, 68, 68, 0.8))'
+                            filter: 'drop-shadow(0 8px 24px rgba(245, 158, 11, 0.65))'
                           }}>
-                            <Heart size={84} fill="#EF4444" color="#FFFFFF" strokeWidth={1.5} />
+                            <img
+                              src={REACTION_MAP[postReactions[post.id]]?.icon || likePuppy}
+                              alt="Liked"
+                              style={{ width: 92, height: 92, objectFit: 'contain' }}
+                            />
                           </div>
                         )}
                       </div>
@@ -974,21 +1018,12 @@ export function FeedView({
                 {/* Action Buttons */}
                 <div className="post-card-footer">
                   <div className="post-actions-group">
-                    <button
-                      className={`post-action-btn ${post.isLiked ? 'liked' : ''}`}
-                      onClick={() => triggerLikeWithAnim(post.id)}
-                      style={{
-                        animation: animatingLikes[post.id] ? 'feedLikeBounce 0.4s ease' : 'none'
-                      }}
-                      title={post.isLiked ? 'Unlike' : 'Like post'}
-                    >
-                      <Heart
-                        size={18}
-                        fill={post.isLiked ? '#ef4444' : 'none'}
-                        color={post.isLiked ? '#ef4444' : '#6b7280'}
-                      />
-                      <span>{post.likes || 0}</span>
-                    </button>
+                    <ReactionPicker
+                      activeReaction={postReactions[post.id] !== undefined ? postReactions[post.id] : (post.isLiked ? 'like_puppy' : null)}
+                      likesCount={getPostLikes(post)}
+                      dislikesCount={getPostDislikes(post)}
+                      onSelectReaction={(reactionId) => handleSelectPostReaction(post.id, reactionId)}
+                    />
 
                     <button
                       className="post-action-btn"

@@ -274,7 +274,7 @@ export function CreatePostModal({
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '2px' }}>
             {[
               { id: 'CLINICAL_CASE', label: 'Clinical Case' },
-              { id: 'GENERAL_POST', label: 'Photo / Post' },
+              { id: 'GENERAL_POST', label: 'Photo / Zenv' },
               { id: 'STORY', label: 'Story' },
               { id: 'SHORT_VIDEO', label: 'Short Video' }
             ].map((tab) => (
@@ -1192,8 +1192,8 @@ export function CreatePostModal({
               <span>
                 {postType === 'STORY' && 'Publish Story'}
                 {postType === 'SHORT_VIDEO' && 'Upload Reel'}
-                {postType === 'GENERAL_POST' && 'Post to Network'}
-                {postType === 'CLINICAL_CASE' && 'Post to Network'}
+                {postType === 'GENERAL_POST' && 'Zenv to Network'}
+                {postType === 'CLINICAL_CASE' && 'Zenv to Network'}
               </span>
               <Send size={14} />
             </button>

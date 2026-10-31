@@ -4,11 +4,13 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { NotificationToast } from './components/NotificationToast';
+import { DeviceNotificationBanner } from './components/DeviceNotificationBanner';
 import {
   registerServiceWorker,
   showNotification,
   notifyReelUploaded,
-  notifyCaseShared
+  notifyCaseShared,
+  notifyIncomingChatMessage
 } from './services/notificationService';
 
 // Pages
@@ -105,6 +107,41 @@ export function App() {
   // Cross-Platform Notification Synchronization (Desktop, Laptop, Android & iOS)
   const seenNotificationIdsRef = useRef(new Set());
   const initialNotifsLoadedRef = useRef(false);
+  const seenMsgKeysRef = useRef(new Set());
+
+  // Tab title alert when user is in another tab or minimized
+  useEffect(() => {
+    const unreadCount = conversations.reduce((acc, c) => acc + (c.unread || 0), 0);
+    const defaultTitle = 'Zenve Vet — The Professional Veterinary Network';
+
+    if (unreadCount <= 0) {
+      document.title = defaultTitle;
+      return;
+    }
+
+    if (document.hidden) {
+      let toggle = false;
+      const interval = setInterval(() => {
+        toggle = !toggle;
+        document.title = toggle
+          ? `💬 (${unreadCount}) New Message${unreadCount > 1 ? 's' : ''} — Zenve Vet`
+          : `(${unreadCount}) Unread Chat Alert — Zenve Vet`;
+      }, 1500);
+
+      const handleFocus = () => {
+        clearInterval(interval);
+        document.title = defaultTitle;
+      };
+
+      window.addEventListener('focus', handleFocus, { once: true });
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('focus', handleFocus);
+      };
+    } else {
+      document.title = `(${unreadCount}) Zenve Vet — The Professional Veterinary Network`;
+    }
+  }, [conversations]);
 
   useEffect(() => {
     registerServiceWorker();
@@ -600,13 +637,17 @@ export function App() {
                 const docSender = prev[convIdx]?.doctor;
                 const senderName = incoming.senderName || docSender?.name || 'A Doctor';
                 const senderAvatar = incoming.senderAvatar || docSender?.avatar;
-                showNotification({
-                  title: `Message from ${senderName}`,
-                  message: incoming.text || (incoming.attachmentUrl ? 'Sent a clinical attachment' : 'Sent a direct message'),
-                  type: 'NEW_MESSAGE',
+                notifyIncomingChatMessage({
+                  senderId: incoming.senderId,
                   senderName,
                   senderAvatar,
-                  targetId: incoming.senderId
+                  message: incoming.text || (incoming.attachmentUrl ? 'Sent a clinical attachment' : 'Sent a direct message'),
+                  conversationId: incoming.conversationId,
+                  onClick: () => handleOpenDirectChat({
+                    id: incoming.senderId,
+                    name: senderName,
+                    avatar: senderAvatar
+                  })
                 });
               }
 
@@ -2296,6 +2337,8 @@ export function App() {
 
       {/* 2. Main Content Layout */}
       <div className="main-content-layout">
+        {/* Device Notifications Enable Banner (Laptop, Mobile & iOS) */}
+        <DeviceNotificationBanner onOpenDirectChat={handleOpenDirectChat} />
         {/* Top Persistent Header & notification dropdown */}
         <Header
           searchQuery={globalSearch}
@@ -2789,8 +2832,9 @@ export function App() {
             setSelectedCase(found || { id: notif.targetId, title: notif.message });
             setActiveTab('cases');
           } else if (notif.type === 'NEW_MESSAGE' || notif.type === 'MESSAGE') {
-            if (notif.senderId || notif.senderName) {
-              handleOpenDirectChat({ id: notif.senderId, name: notif.senderName, avatar: notif.senderAvatar });
+            const targetDocId = notif.senderId || notif.targetId;
+            if (targetDocId || notif.senderName) {
+              handleOpenDirectChat({ id: targetDocId, name: notif.senderName, avatar: notif.senderAvatar });
             } else {
               setActiveTab('messages');
             }

@@ -29,7 +29,8 @@ import zenveLogo from '../assets/zenve_logo.png';
 import {
   requestNotificationPermission,
   getNotificationPermission,
-  sendTestNotification
+  sendTestNotification,
+  simulateDirectMessageNotification
 } from '../services/notificationService';
 
 export function Header({
@@ -126,7 +127,8 @@ export function Header({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '2px',
+            padding: '5px',
+            boxSizing: 'border-box',
             flexShrink: 0
           }}>
             <img
@@ -265,7 +267,7 @@ export function Header({
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ECFDF5'}
           >
             <Sparkles size={14} color="#059669" />
-            <span className="header-create-btn-label">Post</span>
+            <span className="header-create-btn-label">Zenv</span>
           </button>
         )}
 
@@ -332,7 +334,7 @@ export function Header({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <BellRing size={15} color="#059669" />
                   <span style={{ fontSize: '11.5px', color: '#065F46', fontWeight: 600 }}>
-                    {getNotificationPermission() === 'granted' ? 'Desktop & Mobile Alerts Active' : 'Enable Laptop & Phone Alerts'}
+                    {getNotificationPermission() === 'granted' ? 'Outside Device Alerts Active' : 'Enable Laptop & Phone Alerts'}
                   </span>
                 </div>
                 <button
@@ -341,7 +343,7 @@ export function Header({
                   onClick={async (e) => {
                     e.stopPropagation();
                     if (getNotificationPermission() === 'granted') {
-                      sendTestNotification();
+                      simulateDirectMessageNotification(onOpenDirectChat);
                     } else {
                       await requestNotificationPermission();
                     }

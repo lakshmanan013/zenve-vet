@@ -46,6 +46,10 @@ import {
 } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { api } from '../services/api';
+import likePuppy from '../assets/reactions/like_puppy.png';
+import sadPuppy from '../assets/reactions/sad_puppy.png';
+import { ReactionPicker } from './ReactionPicker';
+import { REACTION_MAP } from '../data/reactions';
 
 export const isVideoUrl = (url) => {
   if (!url || typeof url !== 'string') return false;
@@ -235,8 +239,8 @@ export function CommunityView({
   const isMember = useMemo(() => {
     if (!activeCommunity || !currentUser) return false;
     const currentId = currentUser.id || 'current';
-    return activeCommunity.members?.some(m => 
-      m.id === currentId || 
+    return activeCommunity.members?.some(m =>
+      m.id === currentId ||
       String(m.id).replace('doc-', '') === String(currentId).replace('doc-', '') ||
       (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
     );
@@ -246,10 +250,10 @@ export function CommunityView({
   const isAdmin = useMemo(() => {
     if (!activeCommunity || !currentUser) return false;
     const currentId = currentUser.id || 'current';
-    return activeCommunity.creatorId === currentId || 
+    return activeCommunity.creatorId === currentId ||
       String(activeCommunity.creatorId).replace('doc-', '') === String(currentId).replace('doc-', '') ||
-      activeCommunity.members?.some(m => 
-        (m.id === currentId || String(m.id).replace('doc-', '') === String(currentId).replace('doc-', '')) && 
+      activeCommunity.members?.some(m =>
+        (m.id === currentId || String(m.id).replace('doc-', '') === String(currentId).replace('doc-', '')) &&
         (m.role?.includes('Admin') || m.role?.includes('Founder'))
       );
   }, [activeCommunity, currentUser]);
@@ -263,13 +267,13 @@ export function CommunityView({
       if (selfId && docCleanId === selfId) return false;
 
       // Must be connected
-      return connectedDoctors.some(c => 
+      return connectedDoctors.some(c =>
         String(c.id).replace('doc-', '') === docCleanId
       );
     });
 
     if (!inviteSearch.trim()) return connectedList;
-    return connectedList.filter(d => 
+    return connectedList.filter(d =>
       d.name?.toLowerCase().includes(inviteSearch.toLowerCase()) ||
       d.specialty?.toLowerCase().includes(inviteSearch.toLowerCase()) ||
       d.city?.toLowerCase().includes(inviteSearch.toLowerCase())
@@ -357,7 +361,7 @@ export function CommunityView({
         return;
       }
     }
-    const found = communities.find(c => 
+    const found = communities.find(c =>
       (c.inviteCode && c.inviteCode.toUpperCase() === code) ||
       String(c.id).toUpperCase() === code ||
       code.includes(String(c.id).toUpperCase())
@@ -626,8 +630,8 @@ export function CommunityView({
               <div className="fb-comm-dd-list">
                 {communities.map((comm) => {
                   const isSelected = activeCommunity?.id === comm.id;
-                  const isUserMember = comm.members?.some(m => 
-                    m.id === currentUser?.id || 
+                  const isUserMember = comm.members?.some(m =>
+                    m.id === currentUser?.id ||
                     String(m.id).replace('doc-', '') === String(currentUser?.id).replace('doc-', '')
                   );
 
@@ -1358,7 +1362,7 @@ export function CommunityView({
                         disabled={!postText.trim()}
                         onClick={handlePostSubmit}
                       >
-                        <span>Post to Group</span>
+                        <span>Zenv to Group</span>
                         <Send size={13} />
                       </button>
                     </div>
@@ -1561,7 +1565,7 @@ export function CommunityView({
                           <div key={doc.id} className="fb-connected-doc-row">
                             <Avatar src={resolved.avatar || doc.avatar} name={resolved.name || doc.name} size={34} />
                             <div className="fb-connected-meta">
-                              <strong 
+                              <strong
                                 className="fb-connected-name"
                                 onClick={() => onOpenDoctorProfile && onOpenDoctorProfile(resolved)}
                               >
@@ -1845,7 +1849,7 @@ export function CommunityView({
                 <div className="fb-chat-scroll-area">
                   {(activeCommunity.chatMessages || []).length > 0 ? (
                     activeCommunity.chatMessages.map((msg) => {
-                      const isMe = msg.senderId === currentUser?.id || 
+                      const isMe = msg.senderId === currentUser?.id ||
                         String(msg.senderId).replace('doc-', '') === String(currentUser?.id).replace('doc-', '');
                       const senderDoc = isMe ? currentUser : resolveDoctor(msg.senderId, msg.senderName);
                       const sAvatar = isMe ? currentUser?.avatar : (senderDoc?.avatar || msg.senderAvatar);
@@ -1961,7 +1965,7 @@ export function CommunityView({
               <div className="fb-members-grid">
                 {(activeCommunity.members || []).map((member) => {
                   const isFounder = member.role?.includes('Founder') || member.role?.includes('Admin');
-                  const isCurrentDoc = member.id === currentUser?.id || 
+                  const isCurrentDoc = member.id === currentUser?.id ||
                     String(member.id).replace('doc-', '') === String(currentUser?.id).replace('doc-', '');
                   const resolved = isCurrentDoc ? currentUser : (resolveDoctor(member.id, member.name) || member);
                   const mAvatar = resolved.avatar || member.avatar;
@@ -1979,7 +1983,7 @@ export function CommunityView({
                       />
                       <div className="fb-member-card-info">
                         <div className="fb-member-name-row">
-                          <strong 
+                          <strong
                             className="fb-member-name"
                             onClick={() => onOpenDoctorProfile && onOpenDoctorProfile(resolved)}
                           >
@@ -2120,7 +2124,7 @@ export function CommunityView({
                 <UserPlus size={18} color="#003822" />
                 <h3 className="fb-modal-title">Invite to {activeCommunity.name}</h3>
               </div>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 onClick={() => setIsInviteModalOpen(false)}
               >
@@ -2179,7 +2183,7 @@ export function CommunityView({
                 <div className="fb-invite-results-scroll">
                   {invitableConnectedDoctors.length > 0 ? (
                     invitableConnectedDoctors.map((doc) => {
-                      const isAlreadyMember = activeCommunity.members?.some(m => 
+                      const isAlreadyMember = activeCommunity.members?.some(m =>
                         String(m.id).replace('doc-', '') === String(doc.id).replace('doc-', '')
                       );
                       const isInvitePending = activeCommunity.pendingInviteDoctorIds?.some(id =>
@@ -2257,7 +2261,7 @@ export function CommunityView({
                 <Plus size={18} color="#003822" />
                 <h3 className="fb-modal-title">Create a Veterinary Community</h3>
               </div>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 onClick={() => setIsCreateModalOpen(false)}
               >
@@ -2389,7 +2393,7 @@ export function CommunityView({
                 <Link size={18} color="#003822" />
                 <h3 className="fb-modal-title">Join with Invite Link / Code</h3>
               </div>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 onClick={() => setIsJoinCodeModalOpen(false)}
               >
@@ -2449,7 +2453,7 @@ export function CommunityView({
                 <FolderHeart size={18} color="#003822" />
                 <h3 className="fb-modal-title">Share Clinical Case to {activeCommunity.name}</h3>
               </div>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 onClick={() => setIsShareCaseModalOpen(false)}
               >
@@ -2639,7 +2643,7 @@ export function CommunityView({
                 <Video size={18} color="#003822" />
                 <h3 className="fb-modal-title">Share Reel Video to {activeCommunity.name}</h3>
               </div>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 onClick={() => setIsShareReelModalOpen(false)}
               >
@@ -2836,7 +2840,7 @@ export function CommunityView({
           <div className="fb-reel-player-modal" onClick={(e) => e.stopPropagation()}>
             <div className="fb-reel-player-header">
               <h4>{selectedReelVideo.title}</h4>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 onClick={() => setSelectedReelVideo(null)}
               >
@@ -2875,7 +2879,7 @@ export function CommunityView({
                 </div>
                 <h3 className="fb-modal-title" style={{ color: '#991b1b' }}>Delete Community</h3>
               </div>
-              <button 
+              <button
                 className="fb-modal-close-btn"
                 disabled={isDeleting}
                 onClick={() => setIsDeleteModalOpen(false)}
@@ -2893,7 +2897,7 @@ export function CommunityView({
                     <p style={{ fontSize: '14px', color: '#374151', margin: '0 0 12px 0', lineHeight: 1.5 }}>
                       Are you sure you want to permanently delete <strong>{targetComm.name}</strong>?
                     </p>
-                    
+
                     <div style={{
                       backgroundColor: '#fef2f2',
                       border: '1px solid #fecaca',
@@ -3155,6 +3159,16 @@ function CommunityGroupPostCard({
 }) {
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [chosenReaction, setChosenReaction] = useState(null);
+
+  const handleCommunityReaction = (reactionId) => {
+    setChosenReaction(reactionId);
+    const wasLike = chosenReaction ? chosenReaction.startsWith('like_') : post.likedByMe;
+    const isNowLike = reactionId ? reactionId.startsWith('like_') : false;
+    if (wasLike !== isNowLike) {
+      onToggleLike(communityId, post.id);
+    }
+  };
 
   // Dynamic doctor lookup so user avatar & details always stay live
   const resolveDoc = (docId, docName) => {
@@ -3165,7 +3179,7 @@ function CommunityGroupPostCard({
     const currentName = (currentUser?.name || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
 
     if ((docId && (docId === currentUser?.id || cleanId === cleanCurrentId)) ||
-        (cleanName && currentName && cleanName === currentName)) {
+      (cleanName && currentName && cleanName === currentName)) {
       return currentUser;
     }
 
@@ -3293,116 +3307,119 @@ function CommunityGroupPostCard({
 
       {/* Reactions & Engagement Summary Bar */}
       <div className="fb-post-engagement-line">
-        <div className="fb-reactions-group">
-          <span className="fb-reaction-icon-heart">❤️</span>
-          <span className="fb-reaction-icon-like">👍</span>
-          <span className="fb-reactions-count">{post.likes || 0}</span>
+        <div className="fb-reactions-group" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <img
+            src={REACTION_MAP[chosenReaction]?.icon || (post.likedByMe ? likePuppy : (chosenReaction ? sadPuppy : likePuppy))}
+            alt="Reaction"
+            style={{ width: 18, height: 18, objectFit: 'contain' }}
+          />
+          <span className="fb-reactions-count">
+            {(post.likes || 0) + (chosenReaction ? (chosenReaction.startsWith('like_') ? 1 : 0) : (post.likedByMe ? 1 : 0))}
+          </span>
         </div>
         <div className="fb-comments-count-text" onClick={() => setShowComments(!showComments)}>
           <span>{(post.comments || []).length} comments</span>
         </div>
       </div>
 
-      {/* Community Interaction Action Buttons */}
-      <div className="fb-post-actions-row">
-        <button
-          type="button"
-          className={`fb-action-btn ${post.likedByMe ? 'liked' : ''}`}
-          onClick={() => onToggleLike(communityId, post.id)}
-        >
-          <ThumbsUp size={16} fill={post.likedByMe ? '#059669' : 'none'} color={post.likedByMe ? '#059669' : '#4b5563'} />
-          <span>Like</span>
-        </button>
+        {/* Community Interaction Action Buttons */}
+        <div className="fb-post-actions-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ReactionPicker
+            activeReaction={chosenReaction !== null ? chosenReaction : (post.likedByMe ? 'like_puppy' : null)}
+            likesCount={(post.likes || 0) + (chosenReaction ? (chosenReaction.startsWith('like_') ? 1 : 0) : (post.likedByMe ? 1 : 0))}
+            dislikesCount={chosenReaction?.startsWith('sad_') ? 1 : 0}
+            onSelectReaction={handleCommunityReaction}
+          />
 
-        <button
-          type="button"
-          className="fb-action-btn"
-          onClick={() => setShowComments(!showComments)}
-        >
-          <MessageCircle size={16} />
-          <span>Comment</span>
-        </button>
+          <button
+            type="button"
+            className="fb-action-btn"
+            onClick={() => setShowComments(!showComments)}
+          >
+            <MessageCircle size={16} />
+            <span>Comment</span>
+          </button>
 
-        <button
-          type="button"
-          className="fb-action-btn"
-          onClick={() => {
-            if (navigator?.clipboard?.writeText) {
-              navigator.clipboard.writeText(window.location.href);
-              alert('Post link copied to clipboard!');
-            }
-          }}
-        >
-          <Share2 size={16} />
-          <span>Share</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            className="fb-action-btn"
+            onClick={() => {
+              if (navigator?.clipboard?.writeText) {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Post link copied to clipboard!');
+              }
+            }}
+          >
+            <Share2 size={16} />
+            <span>Share</span>
+          </button>
+        </div>
 
-      {/* Comments Section */}
-      {(showComments || (post.comments && post.comments.length > 0)) && (
-        <div className="fb-comments-stream">
-          {(post.comments || []).map((comm) => {
-            const commentDoc = resolveDoc(comm.authorId, comm.authorName);
-            const commAvatar = commentDoc?.avatar || comm.authorAvatar;
-            const commName = commentDoc?.name || comm.authorName;
+        {/* Comments Section */}
+        {(showComments || (post.comments && post.comments.length > 0)) && (
+          <div className="fb-comments-stream">
+            {(post.comments || []).map((comm) => {
+              const commentDoc = resolveDoc(comm.authorId, comm.authorName);
+              const commAvatar = commentDoc?.avatar || comm.authorAvatar;
+              const commName = commentDoc?.name || comm.authorName;
 
-            return (
-              <div key={comm.id} className="fb-comment-row">
-                <Avatar
-                  src={commAvatar}
-                  name={commName}
-                  size={30}
-                  onClick={() => {
-                    const targetDoc = commentDoc || { name: comm.authorName, id: comm.authorId, avatar: commAvatar };
-                    onOpenDoctorProfile && onOpenDoctorProfile(targetDoc);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                />
-                <div className="fb-comment-bubble">
-                  <div
-                    className="fb-comment-author-name"
+              return (
+                <div key={comm.id} className="fb-comment-row">
+                  <Avatar
+                    src={commAvatar}
+                    name={commName}
+                    size={30}
                     onClick={() => {
                       const targetDoc = commentDoc || { name: comm.authorName, id: comm.authorId, avatar: commAvatar };
                       onOpenDoctorProfile && onOpenDoctorProfile(targetDoc);
                     }}
                     style={{ cursor: 'pointer' }}
-                  >
-                    {commName}
+                  />
+                  <div className="fb-comment-bubble">
+                    <div
+                      className="fb-comment-author-name"
+                      onClick={() => {
+                        const targetDoc = commentDoc || { name: comm.authorName, id: comm.authorId, avatar: commAvatar };
+                        onOpenDoctorProfile && onOpenDoctorProfile(targetDoc);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {commName}
+                    </div>
+                    <p className="fb-comment-text">{comm.text}</p>
+                    <div className="fb-comment-time">{comm.timestamp || 'Just now'}</div>
                   </div>
-                  <p className="fb-comment-text">{comm.text}</p>
-                  <div className="fb-comment-time">{comm.timestamp || 'Just now'}</div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {isMember && (
-            <form onSubmit={handleCommentSubmit} className="fb-comment-input-form">
-              <Avatar
-                src={currentUser?.avatar}
-                name={currentUser?.name || 'Doctor'}
-                size={30}
-              />
-              <div className="fb-comment-input-box">
-                <input
-                  type="text"
-                  placeholder="Write a clinical observation or comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="fb-comment-text-field"
+            {isMember && (
+              <form onSubmit={handleCommentSubmit} className="fb-comment-input-form">
+                <Avatar
+                  src={currentUser?.avatar}
+                  name={currentUser?.name || 'Doctor'}
+                  size={30}
                 />
-                <button
-                  type="submit"
-                  disabled={!commentText.trim()}
-                  className="fb-comment-reply-btn"
-                >
-                  <Send size={13} />
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      )}
+                <div className="fb-comment-input-box">
+                  <input
+                    type="text"
+                    placeholder="Write a clinical observation or comment..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    className="fb-comment-text-field"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!commentText.trim()}
+                    className="fb-comment-reply-btn"
+                  >
+                    <Send size={13} />
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
     </article>
   );
 }

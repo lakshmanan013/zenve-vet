@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Lock,
   Mail,
@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import zenveLogo from '../assets/zenve_logo.png';
 import loginBgVet from '../assets/login_bg_vet.jpg';
+import { LOGIN_BACKGROUNDS } from '../data/loginBackgrounds';
 import { SPECIALTIES, STATES_INDIA } from '../data/mockData';
 import { api } from '../services/api';
 import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
@@ -75,6 +76,17 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
   const [otpSent, setOtpSent] = useState(false);
   const [otpMaskedPhone, setOtpMaskedPhone] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
+
+  // Dynamic Background Slideshow (cycles every 15 seconds)
+  const [activeBgIndex, setActiveBgIndex] = useState(0);
+
+  useEffect(() => {
+    if (!LOGIN_BACKGROUNDS || LOGIN_BACKGROUNDS.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveBgIndex(prev => (prev + 1) % LOGIN_BACKGROUNDS.length);
+    }, 15000); // 15 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSendLoginOtp = async (e) => {
     e?.preventDefault();
@@ -248,10 +260,17 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
   };
 
   return (
-    <div
-      className="zenve-modern-portal"
-      style={{ backgroundImage: `url(${loginBgVet})` }}
-    >
+    <div className="zenve-modern-portal">
+      {/* Dynamic Background Slideshow (cycles every 15s) */}
+      <div className="portal-bg-slideshow-container" aria-hidden="true">
+        {LOGIN_BACKGROUNDS.map((bg, idx) => (
+          <div
+            key={idx}
+            className={`portal-bg-slide ${idx === activeBgIndex ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${bg})` }}
+          />
+        ))}
+      </div>
       {/* TOP HEADER NAVIGATION BAR */}
       <header className="portal-topbar">
         <div className="portal-brand-group">
@@ -263,8 +282,6 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
           <div className="portal-brand-text-block">
             <span className="brand-zenve">ZENVE</span>
             <span className="brand-vet">VET</span>
-            <span className="brand-divider">|</span>
-            <span className="brand-tagline">THE PROFESSIONAL NETWORK</span>
           </div>
         </div>
 
@@ -405,7 +422,7 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                         className="auth-select-input"
                       >
-                        <option value="">Select State (Optional)</option>
+                        <option value="">Select State</option>
                         {STATES_INDIA.filter(s => s !== 'All states').map(s => (
                           <option key={s} value={s}>{s}</option>
                         ))}
@@ -418,7 +435,7 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
                         <MapPin size={15} className="auth-input-lead-icon" />
                         <input
                           type="text"
-                          placeholder="e.g. Pune, Mumbai, Delhi"
+                          placeholder="e.g. Pune, Mumbai"
                           value={formData.city}
                           onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                           className="auth-text-input"
@@ -484,27 +501,13 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
                   </div>
 
                   {/* Terms & Conditions Agreement */}
-                  <div className="auth-field-group" style={{ marginTop: '8px' }}>
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        fontSize: '11.5px',
-                        color: '#374151',
-                        lineHeight: 1.45,
-                        background: '#f0fdf4',
-                        padding: '8px 10px',
-                        borderRadius: '8px',
-                        border: '1px solid #d1fae5'
-                      }}
-                    >
+                  <div className="auth-field-group auth-terms-compact-wrap">
+                    <label className="auth-terms-compact-label">
                       <input
                         type="checkbox"
                         checked={formData.termsAccepted}
                         onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
-                        style={{ marginTop: '2px', accentColor: '#003822' }}
+                        className="auth-terms-compact-checkbox"
                       />
                       <span>
                         I agree to the{' '}
@@ -515,20 +518,11 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
                             e.stopPropagation();
                             onOpenTerms && onOpenTerms();
                           }}
-                          style={{
-                            color: '#003822',
-                            fontWeight: 700,
-                            textDecoration: 'underline',
-                            background: 'none',
-                            border: 'none',
-                            padding: 0,
-                            cursor: 'pointer',
-                            display: 'inline'
-                          }}
+                          className="auth-terms-compact-btn"
                         >
                           Terms & Conditions
                         </button>
-                        {' '}of <strong>Zenve Pets Healthcare Pvt. Ltd.</strong> and confirm my veterinary licensure.
+                        {' '}of <strong>Zenve Pets Healthcare Pvt. Ltd.</strong> and confirm veterinary licensure.
                       </span>
                     </label>
                   </div>
@@ -812,46 +806,6 @@ export function LoginPage({ onLoginSuccess, onCancel, onOpenTerms }) {
           </div>
         </section>
       </main>
-
-      {/* BOTTOM FOREST GREEN METRICS BAR */}
-      <footer className="portal-forest-wave-bar">
-        <div className="wave-metric-chip">
-          <ShieldCheck size={14} color="#6EE7B7" />
-          <span>Real Cases</span>
-        </div>
-        <div className="wave-metric-sep" />
-        <div className="wave-metric-chip">
-          <Users size={14} color="#6EE7B7" />
-          <span>Real Experts</span>
-        </div>
-        <div className="wave-metric-sep" />
-        <div className="wave-metric-chip">
-          <Heart size={14} color="#6EE7B7" />
-          <span>Better Outcomes</span>
-        </div>
-        <div className="wave-metric-sep" />
-        <div className="wave-metric-chip active-pulse">
-          <Activity size={13} color="#34D399" />
-          <span>1,240+ Doctors Online</span>
-        </div>
-        <div className="wave-metric-sep" />
-        <button
-          type="button"
-          onClick={onOpenTerms}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#a7f3d0',
-            fontSize: '11.5px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            textDecoration: 'underline'
-          }}
-          title="Zenve Pets Healthcare Pvt. Ltd. Official Terms"
-        >
-          Zenve Pets Healthcare Terms
-        </button>
-      </footer>
 
       {/* ================= FORGOT PASSWORD MODAL ================= */}
       {showForgotModal && (

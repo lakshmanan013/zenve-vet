@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Heart, MessageSquare, Bookmark, Share2, Play, Pause, Send, Stethoscope } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { api } from '../services/api';
+import likePuppy from '../assets/reactions/like_puppy.png';
 
 export function VideoPlayerModal({ video, onClose, currentUser, doctors = [] }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -178,10 +179,33 @@ export function VideoPlayerModal({ video, onClose, currentUser, doctors = [] }) 
           <div style={{ position: 'absolute', right: 14, bottom: 85, display: 'flex', flexDirection: 'column', gap: 12, zIndex: 10 }}>
             <button 
               onClick={() => setIsLiked(!isLiked)} 
-              style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', width: 38, height: 38, borderRadius: '50%', color: isLiked ? '#EF4444' : '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+              style={{
+                background: isLiked ? 'rgba(245, 158, 11, 0.3)' : 'rgba(0,0,0,0.55)',
+                backdropFilter: 'blur(4px)',
+                width: 38,
+                height: 38,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: isLiked ? '1.5px solid #F59E0B' : '1px solid rgba(255,255,255,0.2)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
               title="Like"
             >
-              <Heart size={18} fill={isLiked ? '#EF4444' : 'none'} />
+              <img
+                src={likePuppy}
+                alt="Like"
+                style={{
+                  width: 22,
+                  height: 22,
+                  objectFit: 'contain',
+                  filter: isLiked ? 'drop-shadow(0 2px 6px rgba(245, 158, 11, 0.5))' : 'grayscale(100%) opacity(0.75)',
+                  transform: isLiked ? 'scale(1.15)' : 'scale(1)',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                }}
+              />
             </button>
             <button 
               onClick={() => setIsSaved(!isSaved)} 

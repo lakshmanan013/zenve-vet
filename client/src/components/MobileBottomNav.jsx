@@ -60,7 +60,7 @@ export function MobileBottomNav({
           <div className="mobile-nav-fab-circle">
             <Plus size={22} strokeWidth={2.6} color="#FFFFFF" />
           </div>
-          <span className="mobile-nav-label fab-label">Post</span>
+          <span className="mobile-nav-label fab-label">Zenv</span>
         </button>
 
         {/* Right items: Cases, Reels, Messages */}
